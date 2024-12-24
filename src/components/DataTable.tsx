@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DataTableProps {
   data: any[];
@@ -32,10 +32,20 @@ export function DataTable({ data, setData }: DataTableProps) {
 
   const handleCellChange = (rowIndex: number, columnKey: string, value: string) => {
     const newData = [...data];
-    newData[rowIndex] = {
-      ...newData[rowIndex],
-      [columnKey]: value,
-    };
+    if (columnKey === "title_id") {
+      const imageUrl = getCoverUrl(value);
+      newData[rowIndex] = {
+        ...newData[rowIndex],
+        [columnKey]: value,
+        cover_url: imageUrl,
+        url: imageUrl
+      };
+    } else {
+      newData[rowIndex] = {
+        ...newData[rowIndex],
+        [columnKey]: value,
+      };
+    }
     setData(newData);
   };
 
@@ -47,6 +57,7 @@ export function DataTable({ data, setData }: DataTableProps) {
   };
 
   const getCoverUrl = (titleId: string) => {
+    if (!titleId) return "/placeholder.svg";
     return `https://orbispatches.com/patches/${titleId}/icon0.png`;
   };
 
@@ -60,7 +71,7 @@ export function DataTable({ data, setData }: DataTableProps) {
       return (
         <div className="relative">
           <div 
-            className="w-32 transition-all duration-500 hover:scale-105 cursor-pointer"
+            className="w-40 transition-all duration-500 hover:scale-105 cursor-pointer"
             onClick={() => handleImageClick(rowIndex)}
           >
             <AspectRatio ratio={3/4}>
@@ -94,7 +105,7 @@ export function DataTable({ data, setData }: DataTableProps) {
         ))}
         <button
           onClick={addNewRow}
-          className="w-32 h-44 flex items-center justify-center rounded-lg border border-gray-800 bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
+          className="w-40 h-[calc(40px*1.33)] flex items-center justify-center rounded-lg border border-gray-800 bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
         >
           Add New
         </button>
@@ -111,6 +122,7 @@ export function DataTable({ data, setData }: DataTableProps) {
                     value={data[selectedIndex][col.key] || ""}
                     onChange={(e) => handleCellChange(selectedIndex, col.key, e.target.value)}
                     className="bg-gray-800/50 border-gray-700"
+                    readOnly={col.key === "url" || col.key === "cover_url"}
                   />
                 </div>
               ))}
