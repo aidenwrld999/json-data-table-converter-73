@@ -2,17 +2,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/DataTable";
 import { useToast } from "@/components/ui/use-toast";
-import { Download, Upload, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Download, Upload } from "lucide-react";
 
 const Index = () => {
   const [data, setData] = useState<any[]>([]);
+  const [originalFileName, setOriginalFileName] = useState<string>("");
   const { toast } = useToast();
-  const { theme, setTheme } = useTheme();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setOriginalFileName(file.name);
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
@@ -67,7 +67,7 @@ const Index = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "data.json";
+    a.download = originalFileName || "data.json";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -80,31 +80,26 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col dark:bg-gray-900">
-      <div className="container mx-auto p-4 space-y-4 flex-grow">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold dark:text-white">JSON Data Editor</h1>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="mr-4"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </Button>
+    <div className="min-h-screen flex flex-col bg-black text-white">
+      <div className="container mx-auto p-4 space-y-8 flex-grow opacity-80 hover:opacity-100 transition-opacity duration-300">
+        <div className="flex justify-between items-center backdrop-blur-lg bg-gray-900/50 p-6 rounded-xl shadow-xl border border-gray-800">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+            JSON Data Editor
+          </h1>
+          <div className="flex items-center space-x-4">
             <Button
               onClick={() => document.getElementById("fileInput")?.click()}
               variant="outline"
+              className="bg-gray-800/50 border-gray-700 hover:bg-gray-700/50 transition-all duration-300 opacity-70 hover:opacity-100"
             >
               <Upload className="w-4 h-4 mr-2" />
               Open Data
             </Button>
-            <Button onClick={handleSave} disabled={data.length === 0}>
+            <Button 
+              onClick={handleSave} 
+              disabled={data.length === 0}
+              className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 opacity-70 hover:opacity-100"
+            >
               <Download className="w-4 h-4 mr-2" />
               Save Data
             </Button>
@@ -119,11 +114,13 @@ const Index = () => {
           onChange={handleFileUpload}
         />
         
-        <DataTable data={data} setData={setData} />
+        <div className="opacity-80 hover:opacity-100 transition-opacity duration-300">
+          <DataTable data={data} setData={setData} />
+        </div>
       </div>
       
-      <footer className="w-full py-4 text-center border-t dark:border-gray-800">
-        <p className="font-medium dark:text-white">
+      <footer className="w-full py-6 text-center border-t border-gray-800 bg-black/50 backdrop-blur-sm">
+        <p className="font-medium">
           © Copyright 2024 by{" "}
           <span className="text-green-500">ItsJo</span>
           <span className="text-purple-500">kerZz</span>
