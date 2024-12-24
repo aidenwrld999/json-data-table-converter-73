@@ -29,24 +29,81 @@ const columns = [
 
 export function DataTable({ data, setData }: DataTableProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [imageIds, setImageIds] = useState<{[key: string]: string}>({});
+
+  const searchGoogleForImageId = async (titleId: string) => {
+    try {
+      // Create a hidden iframe to load Google search results
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      // Load Google search for orbispatches and the title ID
+      const searchUrl = `https://www.google.com/search?q=site:orbispatches.com+${titleId}+icon0`;
+      if (iframe.contentWindow) {
+        iframe.contentWindow.location.href = searchUrl;
+      }
+
+      // Wait for the page to load and extract image ID
+      iframe.onload = async () => {
+        try {
+          const content = iframe.contentDocument?.documentElement.innerHTML;
+          if (content) {
+            const match = content.match(/[a-f0-9]{64}/);
+            if (match) {
+              const imageId = match[0];
+              setImageIds(prev => ({ ...prev, [titleId]: imageId }));
+              updateImageUrl(titleId, imageId);
+            }
+          }
+        } finally {
+          // Clean up
+          document.body.removeChild(iframe);
+        }
+      };
+    } catch (error) {
+      console.error('Error searching for image ID:', error);
+    }
+  };
+
+  const updateImageUrl = (titleId: string, imageId: string) => {
+    const imageUrl = `https://cdn.orbispatches.com/titles/${titleId}_${imageId}/icon0.webp`;
+    const rowIndex = data.findIndex(row => row.title_id === titleId);
+    if (rowIndex !== -1) {
+      const newData = [...data];
+      newData[rowIndex] = {
+        ...newData[rowIndex],
+        cover_url: imageUrl,
+        url: imageUrl
+      };
+      setData(newData);
+    }
+  };
 
   const handleCellChange = (rowIndex: number, columnKey: string, value: string) => {
     const newData = [...data];
     if (columnKey === "title_id") {
-      const imageUrl = getCoverUrl(value);
+      // First update with a temporary URL
+      const tempImageUrl = getCoverUrl(value);
       newData[rowIndex] = {
         ...newData[rowIndex],
         [columnKey]: value,
-        cover_url: imageUrl,
-        url: imageUrl
+        cover_url: tempImageUrl,
+        url: tempImageUrl
       };
+      setData(newData);
+      
+      // Then search for the actual image ID
+      if (value) {
+        searchGoogleForImageId(value);
+      }
     } else {
       newData[rowIndex] = {
         ...newData[rowIndex],
         [columnKey]: value,
       };
+      setData(newData);
     }
-    setData(newData);
   };
 
   const addNewRow = () => {
@@ -58,6 +115,9 @@ export function DataTable({ data, setData }: DataTableProps) {
 
   const getCoverUrl = (titleId: string) => {
     if (!titleId) return "/placeholder.svg";
+    if (imageIds[titleId]) {
+      return `https://cdn.orbispatches.com/titles/${titleId}_${imageIds[titleId]}/icon0.webp`;
+    }
     return `https://orbispatches.com/patches/${titleId}/icon0.png`;
   };
 
@@ -67,7 +127,7 @@ export function DataTable({ data, setData }: DataTableProps) {
 
   const renderCell = (row: any, column: { key: string; label: string }, rowIndex: number) => {
     if (column.key === "cover_url") {
-      const coverUrl = getCoverUrl(row.title_id);
+      const coverUrl = row.cover_url || getCoverUrl(row.title_id);
       return (
         <div className="relative">
           <div 
