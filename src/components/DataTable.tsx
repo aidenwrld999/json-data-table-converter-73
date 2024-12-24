@@ -7,6 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface DataTableProps {
   data: any[];
@@ -22,7 +23,7 @@ const columns = [
   { key: "release", label: "Release" },
   { key: "min_fw", label: "Min FW" },
   { key: "url", label: "URL" },
-  { key: "cover_url", label: "Cover URL" },
+  { key: "cover_url", label: "Cover" },
 ];
 
 export function DataTable({ data, setData }: DataTableProps) {
@@ -42,6 +43,43 @@ export function DataTable({ data, setData }: DataTableProps) {
     ]);
   };
 
+  const renderCell = (row: any, column: { key: string; label: string }, rowIndex: number) => {
+    if (column.key === "cover_url") {
+      return (
+        <div className="w-32 mx-auto">
+          <AspectRatio ratio={3/4}>
+            {row[column.key] ? (
+              <img
+                src={row[column.key]}
+                alt="Cover"
+                className="rounded-md object-cover w-full h-full"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/placeholder.svg";
+                }}
+              />
+            ) : (
+              <div className="w-full h-full bg-muted rounded-md flex items-center justify-center">
+                No Image
+              </div>
+            )}
+          </AspectRatio>
+          <Input
+            value={row[column.key] || ""}
+            onChange={(e) => handleCellChange(rowIndex, column.key, e.target.value)}
+            className="mt-2"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <Input
+        value={row[column.key] || ""}
+        onChange={(e) => handleCellChange(rowIndex, column.key, e.target.value)}
+      />
+    );
+  };
+
   return (
     <div className="border rounded-lg">
       <Table>
@@ -57,12 +95,7 @@ export function DataTable({ data, setData }: DataTableProps) {
             <TableRow key={rowIndex}>
               {columns.map((column) => (
                 <TableCell key={column.key}>
-                  <Input
-                    value={row[column.key] || ""}
-                    onChange={(e) =>
-                      handleCellChange(rowIndex, column.key, e.target.value)
-                    }
-                  />
+                  {renderCell(row, column, rowIndex)}
                 </TableCell>
               ))}
             </TableRow>
