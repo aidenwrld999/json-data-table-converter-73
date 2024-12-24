@@ -43,88 +43,69 @@ export function DataTable({ data, setData }: DataTableProps) {
     ]);
   };
 
+  const getCoverUrl = (titleId: string) => {
+    return `https://orbispatches.com/patches/${titleId}/icon0.png`;
+  };
+
   const renderCell = (row: any, column: { key: string; label: string }, rowIndex: number) => {
     if (column.key === "cover_url") {
+      const coverUrl = getCoverUrl(row.title_id);
       return (
-        <div className="w-24 transition-all duration-300 hover:w-32 group opacity-70 hover:opacity-100">
-          <AspectRatio ratio={3/4}>
-            {row[column.key] ? (
+        <div className="relative group">
+          <div className="w-24 transition-all duration-500 group-hover:w-32">
+            <AspectRatio ratio={3/4}>
               <img
-                src={row[column.key]}
+                src={coverUrl}
                 alt="Cover"
-                className="rounded-lg object-cover w-full h-full shadow-lg transition-transform duration-300 group-hover:scale-105 border border-gray-800"
+                className="rounded-lg object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 group-hover:opacity-100 group-hover:scale-105 border border-gray-800"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />
-            ) : (
-              <div className="w-full h-full bg-gray-900 rounded-lg flex items-center justify-center text-sm text-gray-400 transition-colors duration-300 hover:bg-gray-800 border border-gray-800">
-                No Image
+            </AspectRatio>
+          </div>
+          
+          <div className="absolute left-full ml-4 top-0 min-w-[600px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 transform translate-x-[-20px] group-hover:translate-x-0">
+            <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg p-4 shadow-xl border border-purple-800/20">
+              <div className="grid grid-cols-2 gap-4">
+                {columns.slice(1).map((col) => (
+                  <div key={col.key} className="space-y-2">
+                    <label className="text-sm text-gray-400">{col.label}</label>
+                    <Input
+                      value={row[col.key] || ""}
+                      onChange={(e) => handleCellChange(rowIndex, col.key, e.target.value)}
+                      className="bg-gray-800/50 border-gray-700"
+                    />
+                  </div>
+                ))}
               </div>
-            )}
-          </AspectRatio>
-          <Input
-            value={row[column.key] || ""}
-            onChange={(e) => handleCellChange(rowIndex, column.key, e.target.value)}
-            className="mt-2 text-xs transition-all duration-300 opacity-0 group-hover:opacity-100 bg-gray-900 border-gray-800"
-            placeholder="Enter image URL"
-          />
+            </div>
+          </div>
         </div>
       );
     }
-
-    return (
-      <Input
-        value={row[column.key] || ""}
-        onChange={(e) => handleCellChange(rowIndex, column.key, e.target.value)}
-        className="transition-all duration-300 hover:ring-2 hover:ring-purple-500/20 opacity-70 hover:opacity-100 bg-gray-900 border-gray-800"
-      />
-    );
+    return null;
   };
 
   return (
-    <div className="border border-gray-800 rounded-xl shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl backdrop-blur-lg bg-gray-900/50">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-gray-800">
-            {columns.map((column) => (
-              <TableHead 
-                key={column.key} 
-                className="font-semibold text-gray-400 bg-black/50"
-              >
-                {column.label}
-              </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.map((row, rowIndex) => (
-            <TableRow 
-              key={rowIndex} 
-              className="group/row border-gray-800"
-            >
-              {columns.map((column) => (
-                <TableCell 
-                  key={column.key} 
-                  className="group-hover/row:bg-gray-800/50 transition-colors duration-300"
-                >
-                  {renderCell(row, column, rowIndex)}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-          <TableRow className="border-gray-800">
-            <TableCell colSpan={columns.length}>
-              <button
-                onClick={addNewRow}
-                className="w-full text-center text-sm text-gray-400 hover:text-white py-2 transition-colors duration-300 opacity-70 hover:opacity-100"
-              >
-                Add New Row
-              </button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+    <div className="space-y-4">
+      <div className="text-sm text-gray-400">
+        Total Items: <span className="text-purple-400">{data.length}</span>
+      </div>
+      
+      <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+        {data.map((row, rowIndex) => (
+          <div key={rowIndex} className="relative group">
+            {renderCell(row, columns[0], rowIndex)}
+          </div>
+        ))}
+        <button
+          onClick={addNewRow}
+          className="w-24 h-32 flex items-center justify-center rounded-lg border border-gray-800 bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
+        >
+          Add New
+        </button>
+      </div>
     </div>
   );
 }
