@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 export const getCoverUrl = (titleId: string): string => {
   if (!titleId) return "/placeholder.svg";
   return `https://www.itsjokerzz.site/a.php?titleid=${titleId}`;
@@ -10,13 +8,11 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
   
   try {
     const url = getCoverUrl(titleId);
-    const response = await axios.get(url, {
-      responseType: 'text'  // Explicitly request text response
-    });
+    const response = await fetch(url);
     
-    if (response.status === 200 && response.data) {
-      // The response.data is already the plain text URL
-      return response.data;
+    if (response.ok) {
+      const text = await response.text();
+      return text;
     }
   } catch (error) {
     console.log('Failed to fetch image:', error);
