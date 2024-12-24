@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const getCoverUrl = (titleId: string): string => {
   if (!titleId) return "/placeholder.svg";
-  return `https://orbispatches.com/title/${titleId}`;
+  return `https://www.itsjokerzz.site/a.php?titleid=${titleId}`;
 };
 
 export const fetchCoverImage = async (titleId: string): Promise<string> => {
@@ -12,19 +12,8 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
     const url = getCoverUrl(titleId);
     const response = await axios.get(url);
     
-    if (response.status === 200) {
-      // Parse the HTML content to find the img-fluid class
-      const htmlContent = response.data;
-      const imgMatch = htmlContent.match(/<img[^>]*class="img-fluid"[^>]*src="([^"]*)"[^>]*>/);
-      
-      if (imgMatch && imgMatch[1]) {
-        let imageUrl = imgMatch[1];
-        // Make relative URLs absolute
-        if (!imageUrl.startsWith("http")) {
-          imageUrl = `https://orbispatches.com${imageUrl}`;
-        }
-        return imageUrl;
-      }
+    if (response.status === 200 && response.data) {
+      return response.data;
     }
   } catch (error) {
     console.log('Failed to fetch image:', error);
