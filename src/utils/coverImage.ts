@@ -1,8 +1,58 @@
+// Function to fetch the HTML content of a URL
+const getHtmlContent = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "text/html",
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch URL: ${url}, Status: ${response.status}`);
+      return null;
+    }
+
+    return await response.text();
+  } catch (error) {
+    console.error(`Error fetching HTML content from ${url}:`, error);
+    return null;
+  }
+};
+
+// Function to extract the image URL using DOMParser
+const getImageUrl = (htmlContent: string): string | null => {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, "text/html");
+    const element = doc.querySelector(".game-icon.secondary");
+
+    if (element) {
+      const style = element.getAttribute("style");
+      if (style) {
+        const match = style.match(/url\((['"]?)(.*?)\1\)/);
+        if (match && match[2]) {
+          return match[2];
+        }
+      }
+    }
+
+    console.warn("No matching element or style attribute found.");
+    return null;
+  } catch (error) {
+    console.error("Error parsing HTML content:", error);
+    return null;
+  }
+};
+
+// Function to get the base URL for a title ID
 export const getCoverUrl = (titleId: string): string => {
   if (!titleId) return "/placeholder.svg";
   return `https://orbispatches.com/${titleId}`;
 };
 
+// Main function to fetch the cover image
 export const fetchCoverImage = async (titleId: string): Promise<string> => {
   if (!titleId) return "/placeholder.svg";
   
@@ -14,18 +64,20 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
       return directUrl;
     }
 
-    // If direct CDN fails, try using our PHP scraper
-    const scraperUrl = `https://www.itsjokerzz.site/scraper.php?titleid=${titleId}`;
-    const scraperResponse = await fetch(scraperUrl);
+    // If CDN fails, try scraping the page
+    const url = getCoverUrl(titleId);
+    const htmlContent = await getHtmlContent(url);
     
-    if (scraperResponse.ok) {
-      // The PHP script will either redirect to the image or return a URL
-      return scraperResponse.url;
+    if (htmlContent) {
+      const imageUrl = getImageUrl(htmlContent);
+      if (imageUrl) {
+        return imageUrl;
+      }
     }
   } catch (error) {
     console.error('Failed to fetch image:', error);
   }
   
-  // If all attempts fail, return the orbispatches URL which will at least show the game page
+  // If all attempts fail, return the orbispatches URL
   return getCoverUrl(titleId);
 };
