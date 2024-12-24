@@ -3,11 +3,25 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/DataTable";
 import { useToast } from "@/components/ui/use-toast";
 import { Download, Upload } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const [data, setData] = useState<any[]>([]);
   const [originalFileName, setOriginalFileName] = useState<string>("");
   const { toast } = useToast();
+
+  // Fetch data from orbispatches.com
+  const { data: orbisData } = useQuery({
+    queryKey: ['orbisData'],
+    queryFn: async () => {
+      const response = await fetch('https://orbispatches.com/CUSA02290');
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      return response.json();
+    },
+    enabled: false, // Only fetch when needed
+  });
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -80,9 +94,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white">
+    <div className="min-h-screen flex flex-col bg-[#1A1F2C] text-white">
       <div className="container mx-auto p-4 space-y-8 flex-grow opacity-80 hover:opacity-100 transition-opacity duration-300">
-        <div className="flex justify-between items-center backdrop-blur-lg bg-gray-900/50 p-6 rounded-xl shadow-xl border border-gray-800">
+        <div className="flex justify-between items-center backdrop-blur-lg bg-[#221F26]/50 p-6 rounded-xl shadow-xl border border-purple-800/20">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
             JSON Data Editor
           </h1>
@@ -90,7 +104,7 @@ const Index = () => {
             <Button
               onClick={() => document.getElementById("fileInput")?.click()}
               variant="outline"
-              className="bg-gray-800/50 border-gray-700 hover:bg-gray-700/50 transition-all duration-300 opacity-70 hover:opacity-100"
+              className="bg-[#403E43]/50 border-purple-800/20 hover:bg-[#403E43]/80 transition-all duration-300 opacity-70 hover:opacity-100"
             >
               <Upload className="w-4 h-4 mr-2" />
               Open Data
@@ -98,7 +112,7 @@ const Index = () => {
             <Button 
               onClick={handleSave} 
               disabled={data.length === 0}
-              className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 opacity-70 hover:opacity-100"
+              className="bg-purple-600/80 hover:bg-purple-700/80 transition-all duration-300 opacity-70 hover:opacity-100"
             >
               <Download className="w-4 h-4 mr-2" />
               Save Data
@@ -119,7 +133,7 @@ const Index = () => {
         </div>
       </div>
       
-      <footer className="w-full py-6 text-center border-t border-gray-800 bg-black/50 backdrop-blur-sm">
+      <footer className="w-full py-6 text-center border-t border-purple-800/20 bg-[#1A1F2C]/50 backdrop-blur-sm">
         <p className="font-medium">
           © Copyright 2024 by{" "}
           <span className="text-green-500">ItsJo</span>
