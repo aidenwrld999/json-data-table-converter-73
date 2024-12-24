@@ -2,25 +2,10 @@ export const getCoverUrl = async (titleId: string): Promise<string> => {
   if (!titleId) return "/placeholder.svg";
   
   try {
-    const response = await fetch(`https://orbispatches.com/${titleId}`);
-    if (!response.ok) {
-      console.error('Failed to fetch page:', response.status);
-      return `/placeholder.svg`;
-    }
-    
-    const html = await response.text();
-    
-    // Extract image URL using regex
-    const styleRegex = /game-icon secondary.*?url\((.*?)\)/s;
-    const match = html.match(styleRegex);
-    
-    if (match && match[1]) {
-      return match[1];
-    }
-    
+    // Directly construct the CDN URL instead of fetching from orbispatches.com
     return `https://cdn.orbispatches.com/titles/${titleId}/icon0.webp`;
   } catch (error) {
-    console.error('Failed to fetch image:', error);
+    console.error('Error with cover URL:', error);
     return `/placeholder.svg`;
   }
 };
@@ -32,7 +17,7 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
     const imageUrl = await getCoverUrl(titleId);
     return imageUrl;
   } catch (error) {
-    console.error('Failed to fetch image:', error);
+    console.error('Error fetching cover:', error);
     return `/placeholder.svg`;
   }
 };
