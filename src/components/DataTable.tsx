@@ -31,10 +31,15 @@ const columns = [
 
 export function DataTable({ data, setData }: DataTableProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [loadingImages, setLoadingImages] = useState<{ [key: string]: boolean }>({});
 
   const handleCellChange = async (rowIndex: number, columnKey: string, value: string) => {
     const newData = [...data];
     if (columnKey === "title_id") {
+      // Set loading state for this row
+      setLoadingImages(prev => ({ ...prev, [rowIndex]: true }));
+      
+      // Immediately update with temporary URL
       const tempImageUrl = getCoverUrl(value);
       newData[rowIndex] = {
         ...newData[rowIndex],
@@ -45,14 +50,20 @@ export function DataTable({ data, setData }: DataTableProps) {
       setData(newData);
       
       if (value) {
-        const imageUrl = await fetchCoverImage(value);
-        const updatedData = [...newData];
-        updatedData[rowIndex] = {
-          ...updatedData[rowIndex],
-          cover_url: imageUrl,
-          url: imageUrl
-        };
-        setData(updatedData);
+        try {
+          const imageUrl = await fetchCoverImage(value);
+          const updatedData = [...newData];
+          updatedData[rowIndex] = {
+            ...updatedData[rowIndex],
+            cover_url: imageUrl,
+            url: imageUrl
+          };
+          setData(updatedData);
+        } catch (error) {
+          console.error('Error fetching cover image:', error);
+        } finally {
+          setLoadingImages(prev => ({ ...prev, [rowIndex]: false }));
+        }
       }
     } else {
       newData[rowIndex] = {
@@ -86,7 +97,9 @@ export function DataTable({ data, setData }: DataTableProps) {
               <img
                 src={row.title_id ? getCoverUrl(row.title_id) : "/placeholder.svg"}
                 alt="Cover"
-                className="rounded-lg object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 hover:opacity-100 border border-gray-800"
+                className={`rounded-lg object-cover w-full h-full shadow-lg transition-all duration-500 ${
+                  loadingImages[rowIndex] ? 'opacity-30' : 'opacity-70 hover:opacity-100'
+                } border border-gray-800`}
                 onError={(e) => {
                   if (row.title_id) {
                     // Keep showing the URL even if image fails to load
@@ -95,6 +108,11 @@ export function DataTable({ data, setData }: DataTableProps) {
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />
+              {loadingImages[rowIndex] && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
             </AspectRatio>
           </div>
         </div>
