@@ -77,19 +77,18 @@ export function DataTable({ data, setData }: DataTableProps) {
   const renderCell = (row: any, column: { key: string; label: string }, rowIndex: number) => {
     if (column.key === "cover_url") {
       return (
-        <div className="relative">
+        <div className="relative w-full h-full">
           <div 
-            className="w-40 transition-all duration-500 hover:scale-105 cursor-pointer"
+            className="w-full aspect-[3/4] transition-all duration-500 hover:scale-105 cursor-pointer"
             onClick={() => handleImageClick(rowIndex)}
           >
-            <AspectRatio ratio={3/4}>
+            <AspectRatio ratio={3/4} className="overflow-hidden rounded-lg">
               <img
-                src={row.title_id ? getCoverUrl(row.title_id) : "/placeholder.svg"}
+                src={row.title_id ? row.url : "/placeholder.svg"}
                 alt="Cover"
-                className="rounded-lg object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 hover:opacity-100 border border-gray-800"
+                className="object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 hover:opacity-100 border border-gray-800"
                 onError={(e) => {
                   if (row.title_id) {
-                    // Keep showing the URL even if image fails to load
                     return;
                   }
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
@@ -109,16 +108,16 @@ export function DataTable({ data, setData }: DataTableProps) {
         Total Items: <span className="text-purple-400">{data.length}</span>
       </div>
       
-      <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6 relative">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
         {data.map((row, rowIndex) => (
-          <div key={rowIndex} className="relative">
+          <div key={rowIndex} className="relative w-full">
             {renderCell(row, columns[0], rowIndex)}
           </div>
         ))}
-        <div className="col-span-1">
+        <div className="relative w-full aspect-[3/4]">
           <button
             onClick={addNewRow}
-            className="w-40 h-[calc(40px*1.33)] flex items-center justify-center rounded-lg border border-gray-800 bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
+            className="w-full h-full flex items-center justify-center rounded-lg border border-gray-800 bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
           >
             Add New
           </button>
@@ -139,7 +138,7 @@ export function DataTable({ data, setData }: DataTableProps) {
                     readOnly={col.key === "url" || col.key === "cover_url"}
                     placeholder={col.key === "url" || col.key === "cover_url" ? 
                       (data[selectedIndex].title_id ? 
-                        (data[selectedIndex][col.key] || getCoverUrl(data[selectedIndex].title_id)) : 
+                        data[selectedIndex][col.key] : 
                         "Enter Title ID first"
                       ) : ""}
                   />

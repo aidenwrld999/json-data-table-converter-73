@@ -17,5 +17,5 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
     console.log('Failed to fetch image:', error);
   }
   
-  return getCoverUrl(titleId);
+  return `https://cdn.orbispatches.com/titles/${titleId}/icon0.webp`;
 };
