@@ -2,12 +2,7 @@ import axios from 'axios';
 
 export const getCoverUrl = (titleId: string): string => {
   if (!titleId) return "/placeholder.svg";
-  
-  // Extract region (e.g., CUSA) and numbers (e.g., 00918)
-  const region = titleId.slice(0, 4);
-  const numbers = titleId.slice(4);
-  
-  return `https://serialstation.com/titles/${region}/${numbers}`;
+  return `https://orbispatches.com/title/${titleId}`;
 };
 
 export const fetchCoverImage = async (titleId: string): Promise<string> => {
@@ -23,7 +18,12 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
       const imgMatch = htmlContent.match(/<img[^>]*class="img-fluid"[^>]*src="([^"]*)"[^>]*>/);
       
       if (imgMatch && imgMatch[1]) {
-        return imgMatch[1]; // Return the actual image URL
+        let imageUrl = imgMatch[1];
+        // Make relative URLs absolute
+        if (!imageUrl.startsWith("http")) {
+          imageUrl = `https://orbispatches.com${imageUrl}`;
+        }
+        return imageUrl;
       }
     }
   } catch (error) {
