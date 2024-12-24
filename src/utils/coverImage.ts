@@ -2,17 +2,25 @@ export const getCoverUrl = async (titleId: string): Promise<string> => {
   if (!titleId) return "/placeholder.svg";
   
   try {
-    const response = await fetch(`https://orbispatches.com/${titleId}`, {
-      mode: 'no-cors',
-      headers: {
-        'Accept': 'text/html',
-      }
-    });
+    const response = await fetch(`https://orbispatches.com/${titleId}`);
+    if (!response.ok) {
+      console.error('Failed to fetch page:', response.status);
+      return `/placeholder.svg`;
+    }
     
-    // Since no-cors mode returns an opaque response, we'll use the CDN URL directly
+    const html = await response.text();
+    
+    // Extract image URL using regex
+    const styleRegex = /game-icon secondary.*?url\((.*?)\)/s;
+    const match = html.match(styleRegex);
+    
+    if (match && match[1]) {
+      return match[1];
+    }
+    
     return `https://cdn.orbispatches.com/titles/${titleId}/icon0.webp`;
   } catch (error) {
-    console.error('Error with cover URL:', error);
+    console.error('Failed to fetch image:', error);
     return `/placeholder.svg`;
   }
 };
@@ -21,17 +29,10 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
   if (!titleId) return "/placeholder.svg";
   
   try {
-    // Try fetching from CDN first
-    const cdnUrl = `https://cdn.orbispatches.com/titles/${titleId}/icon0.webp`;
-    const response = await fetch(cdnUrl, { mode: 'no-cors' });
-    
-    if (response.type === 'opaque') {
-      return cdnUrl;
-    }
-    
-    return `/placeholder.svg`;
+    const imageUrl = await getCoverUrl(titleId);
+    return imageUrl;
   } catch (error) {
-    console.error('Error fetching cover:', error);
+    console.error('Failed to fetch image:', error);
     return `/placeholder.svg`;
   }
 };
