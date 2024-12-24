@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { getCoverUrl, fetchCoverImage } from "@/utils/coverImage";
 
 interface DataTableProps {
   data: any[];
@@ -29,58 +30,8 @@ const columns = [
 
 export function DataTable({ data, setData }: DataTableProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [imageIds, setImageIds] = useState<{[key: string]: string}>({});
 
-  const searchGoogleForImageId = async (titleId: string) => {
-    try {
-      // Create a hidden iframe to load Google search results
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-
-      // Load Google search for orbispatches and the title ID
-      const searchUrl = `https://www.google.com/search?q=site:orbispatches.com+${titleId}+icon0`;
-      if (iframe.contentWindow) {
-        iframe.contentWindow.location.href = searchUrl;
-      }
-
-      // Wait for the page to load and extract image ID
-      iframe.onload = async () => {
-        try {
-          const content = iframe.contentDocument?.documentElement.innerHTML;
-          if (content) {
-            const match = content.match(/[a-f0-9]{64}/);
-            if (match) {
-              const imageId = match[0];
-              setImageIds(prev => ({ ...prev, [titleId]: imageId }));
-              updateImageUrl(titleId, imageId);
-            }
-          }
-        } finally {
-          // Clean up
-          document.body.removeChild(iframe);
-        }
-      };
-    } catch (error) {
-      console.error('Error searching for image ID:', error);
-    }
-  };
-
-  const updateImageUrl = (titleId: string, imageId: string) => {
-    const imageUrl = `https://cdn.orbispatches.com/titles/${titleId}_${imageId}/icon0.webp`;
-    const rowIndex = data.findIndex(row => row.title_id === titleId);
-    if (rowIndex !== -1) {
-      const newData = [...data];
-      newData[rowIndex] = {
-        ...newData[rowIndex],
-        cover_url: imageUrl,
-        url: imageUrl
-      };
-      setData(newData);
-    }
-  };
-
-  const handleCellChange = (rowIndex: number, columnKey: string, value: string) => {
+  const handleCellChange = async (rowIndex: number, columnKey: string, value: string) => {
     const newData = [...data];
     if (columnKey === "title_id") {
       // First update with a temporary URL
@@ -93,9 +44,16 @@ export function DataTable({ data, setData }: DataTableProps) {
       };
       setData(newData);
       
-      // Then search for the actual image ID
+      // Then fetch the actual image
       if (value) {
-        searchGoogleForImageId(value);
+        const imageUrl = await fetchCoverImage(value);
+        const updatedData = [...newData];
+        updatedData[rowIndex] = {
+          ...updatedData[rowIndex],
+          cover_url: imageUrl,
+          url: imageUrl
+        };
+        setData(updatedData);
       }
     } else {
       newData[rowIndex] = {
@@ -111,14 +69,6 @@ export function DataTable({ data, setData }: DataTableProps) {
       ...data,
       columns.reduce((acc, col) => ({ ...acc, [col.key]: "" }), {}),
     ]);
-  };
-
-  const getCoverUrl = (titleId: string) => {
-    if (!titleId) return "/placeholder.svg";
-    if (imageIds[titleId]) {
-      return `https://cdn.orbispatches.com/titles/${titleId}_${imageIds[titleId]}/icon0.webp`;
-    }
-    return `https://orbispatches.com/patches/${titleId}/icon0.png`;
   };
 
   const handleImageClick = (index: number) => {
