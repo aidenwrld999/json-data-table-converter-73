@@ -4,12 +4,25 @@ import { DataTable } from "@/components/DataTable";
 import { useToast } from "@/components/ui/use-toast";
 import { Download, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getCoverUrl } from "@/utils/coverImage";
+import { fetchCoverImage } from "@/utils/coverImage";
 
 const Index = () => {
   const [data, setData] = useState<any[]>([]);
   const [originalFileName, setOriginalFileName] = useState<string>("");
   const { toast } = useToast();
+
+  // Fetch data from orbispatches.com
+  const { data: orbisData } = useQuery({
+    queryKey: ['orbisData'],
+    queryFn: async () => {
+      const response = await fetch('https://orbispatches.com/CUSA02290');
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      return response.json();
+    },
+    enabled: false, // Only fetch when needed
+  });
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -21,13 +34,9 @@ const Index = () => {
           const json = JSON.parse(e.target?.result as string);
           const tableData = await Promise.all(
             Object.entries(json.DATA).map(async ([pkg_url, details]: [string, any]) => {
-              let coverUrl = "/placeholder.svg";
+              let coverUrl = details.cover_url;
               if (details.title_id) {
-                try {
-                  coverUrl = await getCoverUrl(details.title_id);
-                } catch (error) {
-                  console.error('Error fetching cover:', error);
-                }
+                coverUrl = await fetchCoverImage(details.title_id);
               }
               return {
                 pkg_url,
