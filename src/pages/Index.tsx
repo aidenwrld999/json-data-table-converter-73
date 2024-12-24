@@ -31,8 +31,8 @@ const Index = () => {
       reader.onload = (e) => {
         try {
           const json = JSON.parse(e.target?.result as string);
-          const tableData = Object.entries(json.DATA).map(([url, details]: [string, any]) => ({
-            url,
+          const tableData = Object.entries(json.DATA).map(([pkg_url, details]: [string, any]) => ({
+            pkg_url,
             title_id: details.title_id,
             region: details.region,
             name: details.name,
@@ -40,6 +40,7 @@ const Index = () => {
             version: details.version,
             release: details.release,
             min_fw: details.min_fw,
+            url: details.cover_url,
             cover_url: details.cover_url
           }));
           setData(tableData);
@@ -62,8 +63,7 @@ const Index = () => {
   const handleSave = () => {
     const jsonData = {
       DATA: data.reduce((acc: any, row) => {
-        const url = row.url.startsWith("http") ? row.url : `https://${row.url}`;
-        acc[url] = {
+        acc[row.pkg_url] = {
           title_id: row.title_id,
           region: row.region,
           name: row.name,
