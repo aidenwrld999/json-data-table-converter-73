@@ -97,14 +97,14 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-[#1A1F2C] text-white">
       <div className="container mx-auto p-4 space-y-8 flex-grow opacity-80 hover:opacity-100 transition-opacity duration-300">
         <div className="flex justify-between items-center backdrop-blur-lg bg-[#221F26]/50 p-6 rounded-xl shadow-xl border border-purple-800/20">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-white bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
             JSON Data Editor
           </h1>
           <div className="flex items-center space-x-4">
             <Button
               onClick={() => document.getElementById("fileInput")?.click()}
               variant="outline"
-              className="bg-[#403E43]/50 border-purple-800/20 hover:bg-[#403E43]/80 transition-all duration-300 opacity-70 hover:opacity-100"
+              className="bg-[#403E43]/50 border-purple-800/20 hover:bg-[#403E43]/80 transition-all duration-300 opacity-70 hover:opacity-100 text-white"
             >
               <Upload className="w-4 h-4 mr-2" />
               Open Data
@@ -112,7 +112,7 @@ const Index = () => {
             <Button 
               onClick={handleSave} 
               disabled={data.length === 0}
-              className="bg-purple-600/80 hover:bg-purple-700/80 transition-all duration-300 opacity-70 hover:opacity-100"
+              className="bg-purple-600/80 hover:bg-purple-700/80 transition-all duration-300 opacity-70 hover:opacity-100 text-white"
             >
               <Download className="w-4 h-4 mr-2" />
               Save Data
@@ -134,7 +134,7 @@ const Index = () => {
       </div>
       
       <footer className="w-full py-6 text-center border-t border-purple-800/20 bg-[#1A1F2C]/50 backdrop-blur-sm">
-        <p className="font-medium">
+        <p className="font-medium text-white">
           © Copyright 2024 by{" "}
           <span className="text-green-500">ItsJo</span>
           <span className="text-purple-500">kerZz</span>
