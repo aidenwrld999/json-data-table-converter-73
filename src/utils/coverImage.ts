@@ -1,24 +1,34 @@
 import axios from 'axios';
 
-export const getCoverUrl = (titleId: string): string => {
+const IMAGE_FORMATS = ['png', 'bmp', 'jpg', 'jpeg'];
+
+export const getCoverUrl = (titleId: string, format: string = 'png'): string => {
   if (!titleId) return "/placeholder.svg";
   const normalizedId = titleId.toUpperCase();
-  return `https://gs2.ww.prod.dl.playstation.net/gs2/ppkgo/prod/${normalizedId}/1/icon0.png`;
+  return `https://gs2.ww.prod.dl.playstation.net/gs2/ppkgo/prod/${normalizedId}/1/icon0.${format}`;
 };
 
 export const fetchCoverImage = async (titleId: string): Promise<string> => {
-  try {
-    const response = await axios.get(getCoverUrl(titleId), {
-      headers: {
-        "User-Agent": "PlayStation/5.0",
-        "Referer": "https://www.playstation.com/"
+  if (!titleId) return "/placeholder.svg";
+  
+  // Try each image format until one works
+  for (const format of IMAGE_FORMATS) {
+    try {
+      const url = getCoverUrl(titleId, format);
+      const response = await axios.get(url, {
+        headers: {
+          "User-Agent": "PlayStation/5.0",
+          "Referer": "https://www.playstation.com/"
+        }
+      });
+      
+      if (response.status === 200) {
+        return url;
       }
-    });
-    
-    // If we get here, the image exists
-    return getCoverUrl(titleId);
-  } catch (error) {
-    console.error('Error fetching cover:', error);
-    return "/placeholder.svg";
+    } catch (error) {
+      console.log(`Failed to fetch ${format} format, trying next...`);
+    }
   }
+  
+  return "/placeholder.svg";
 };

@@ -25,7 +25,8 @@ const columns = [
   { key: "version", label: "Version" },
   { key: "release", label: "Release" },
   { key: "min_fw", label: "Min FW" },
-  { key: "url", label: "URL" },
+  { key: "url", label: "Cover URL" },
+  { key: "pkg_url", label: "Package Download URL" },
 ];
 
 export function DataTable({ data, setData }: DataTableProps) {
@@ -34,7 +35,6 @@ export function DataTable({ data, setData }: DataTableProps) {
   const handleCellChange = async (rowIndex: number, columnKey: string, value: string) => {
     const newData = [...data];
     if (columnKey === "title_id") {
-      // First update with a temporary URL
       const tempImageUrl = getCoverUrl(value);
       newData[rowIndex] = {
         ...newData[rowIndex],
@@ -44,7 +44,6 @@ export function DataTable({ data, setData }: DataTableProps) {
       };
       setData(newData);
       
-      // Then fetch the actual image
       if (value) {
         const imageUrl = await fetchCoverImage(value);
         const updatedData = [...newData];
@@ -77,7 +76,6 @@ export function DataTable({ data, setData }: DataTableProps) {
 
   const renderCell = (row: any, column: { key: string; label: string }, rowIndex: number) => {
     if (column.key === "cover_url") {
-      const coverUrl = row.cover_url || getCoverUrl(row.title_id);
       return (
         <div className="relative">
           <div 
@@ -86,7 +84,7 @@ export function DataTable({ data, setData }: DataTableProps) {
           >
             <AspectRatio ratio={3/4}>
               <img
-                src={coverUrl}
+                src={row.cover_url || getCoverUrl(row.title_id)}
                 alt="Cover"
                 className="rounded-lg object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 hover:opacity-100 border border-gray-800"
                 onError={(e) => {
