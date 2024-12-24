@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-const IMAGE_FORMATS = ['png', 'bmp', 'jpg', 'jpeg'];
-
 export const getCoverUrl = (titleId: string): string => {
   if (!titleId) return "/placeholder.svg";
   
@@ -20,11 +18,17 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
     const response = await axios.get(url);
     
     if (response.status === 200) {
-      return url;
+      // Parse the HTML content to find the img-fluid class
+      const htmlContent = response.data;
+      const imgMatch = htmlContent.match(/<img[^>]*class="img-fluid"[^>]*src="([^"]*)"[^>]*>/);
+      
+      if (imgMatch && imgMatch[1]) {
+        return imgMatch[1]; // Return the actual image URL
+      }
     }
   } catch (error) {
     console.log('Failed to fetch image:', error);
   }
   
-  return getCoverUrl(titleId); // Return the URL even if fetch fails
+  return getCoverUrl(titleId); // Return the base URL as fallback
 };
