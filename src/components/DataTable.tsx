@@ -58,7 +58,7 @@ export function DataTable({ data, setData }: DataTableProps) {
     if (column.key === "cover_url") {
       const coverUrl = getCoverUrl(row.title_id);
       return (
-        <div className="relative group">
+        <div className="relative">
           <div 
             className="w-32 transition-all duration-500 hover:scale-105 cursor-pointer"
             onClick={() => handleImageClick(rowIndex)}
@@ -74,23 +74,6 @@ export function DataTable({ data, setData }: DataTableProps) {
               />
             </AspectRatio>
           </div>
-          
-          <div className={`absolute left-full ml-4 top-0 min-w-[600px] ${selectedIndex === rowIndex ? 'opacity-100 visible translate-x-0' : 'opacity-0 invisible translate-x-[-20px]'} transition-all duration-500`}>
-            <div className="bg-[#221F26]/95 backdrop-blur-sm rounded-lg p-4 shadow-xl border border-purple-800/20">
-              <div className="grid grid-cols-2 gap-4">
-                {columns.slice(1).map((col) => (
-                  <div key={col.key} className="space-y-2">
-                    <label className="text-sm text-gray-400">{col.label}</label>
-                    <Input
-                      value={row[col.key] || ""}
-                      onChange={(e) => handleCellChange(rowIndex, col.key, e.target.value)}
-                      className="bg-gray-800/50 border-gray-700"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       );
     }
@@ -105,7 +88,7 @@ export function DataTable({ data, setData }: DataTableProps) {
       
       <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
         {data.map((row, rowIndex) => (
-          <div key={rowIndex} className="relative group">
+          <div key={rowIndex} className="relative">
             {renderCell(row, columns[0], rowIndex)}
           </div>
         ))}
@@ -116,6 +99,31 @@ export function DataTable({ data, setData }: DataTableProps) {
           Add New
         </button>
       </div>
+
+      {selectedIndex !== null && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#221F26]/95 backdrop-blur-sm rounded-lg p-6 shadow-xl border border-purple-800/20 w-[90%] max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="grid grid-cols-2 gap-4">
+              {columns.slice(1).map((col) => (
+                <div key={col.key} className="space-y-2">
+                  <label className="text-sm text-gray-400">{col.label}</label>
+                  <Input
+                    value={data[selectedIndex][col.key] || ""}
+                    onChange={(e) => handleCellChange(selectedIndex, col.key, e.target.value)}
+                    className="bg-gray-800/50 border-gray-700"
+                  />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setSelectedIndex(null)}
+              className="mt-6 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/40 rounded-lg text-purple-200 transition-colors duration-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
