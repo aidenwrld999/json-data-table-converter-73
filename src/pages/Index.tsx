@@ -4,14 +4,13 @@ import { DataTable } from "@/components/DataTable";
 import { useToast } from "@/components/ui/use-toast";
 import { Download, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchCoverImage } from "@/utils/coverImage";
+import { getCoverUrl } from "@/utils/coverImage";
 
 const Index = () => {
   const [data, setData] = useState<any[]>([]);
   const [originalFileName, setOriginalFileName] = useState<string>("");
   const { toast } = useToast();
 
-  // Fetch data from orbispatches.com
   const { data: orbisData } = useQuery({
     queryKey: ['orbisData'],
     queryFn: async () => {
@@ -21,37 +20,31 @@ const Index = () => {
       }
       return response.json();
     },
-    enabled: false, // Only fetch when needed
+    enabled: false,
   });
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setOriginalFileName(file.name);
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = (e) => {
         try {
           const json = JSON.parse(e.target?.result as string);
-          const tableData = await Promise.all(
-            Object.entries(json.DATA).map(async ([pkg_url, details]: [string, any]) => {
-              let coverUrl = details.cover_url;
-              if (details.title_id) {
-                coverUrl = await fetchCoverImage(details.title_id);
-              }
-              return {
-                pkg_url,
-                title_id: details.title_id,
-                region: details.region,
-                name: details.name,
-                size: details.size,
-                version: details.version,
-                release: details.release,
-                min_fw: details.min_fw,
-                url: coverUrl,
-                cover_url: coverUrl
-              };
-            })
-          );
+          // Immediately set initial data with temporary cover URLs
+          const tableData = Object.entries(json.DATA).map(([pkg_url, details]: [string, any]) => ({
+            pkg_url,
+            title_id: details.title_id,
+            region: details.region,
+            name: details.name,
+            size: details.size,
+            version: details.version,
+            release: details.release,
+            min_fw: details.min_fw,
+            url: details.title_id ? getCoverUrl(details.title_id) : "/placeholder.svg",
+            cover_url: details.title_id ? getCoverUrl(details.title_id) : "/placeholder.svg"
+          }));
+          
           setData(tableData);
           toast({
             title: "Success",
