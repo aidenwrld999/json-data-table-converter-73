@@ -35,24 +35,25 @@ export function DataTable({ data, setData }: DataTableProps) {
   const handleCellChange = async (rowIndex: number, columnKey: string, value: string) => {
     const newData = [...data];
     if (columnKey === "title_id") {
-      const tempImageUrl = getCoverUrl(value);
       newData[rowIndex] = {
         ...newData[rowIndex],
         [columnKey]: value,
-        cover_url: tempImageUrl,
-        url: tempImageUrl
       };
       setData(newData);
       
       if (value) {
-        const imageUrl = await fetchCoverImage(value);
-        const updatedData = [...newData];
-        updatedData[rowIndex] = {
-          ...updatedData[rowIndex],
-          cover_url: imageUrl,
-          url: imageUrl
-        };
-        setData(updatedData);
+        try {
+          const imageUrl = await getCoverUrl(value);
+          const updatedData = [...newData];
+          updatedData[rowIndex] = {
+            ...updatedData[rowIndex],
+            cover_url: imageUrl,
+            url: imageUrl
+          };
+          setData(updatedData);
+        } catch (error) {
+          console.error('Error fetching cover:', error);
+        }
       }
     } else {
       newData[rowIndex] = {
@@ -84,13 +85,10 @@ export function DataTable({ data, setData }: DataTableProps) {
           >
             <AspectRatio ratio={3/4} className="overflow-hidden rounded-lg">
               <img
-                src={row.title_id ? row.url : "/placeholder.svg"}
+                src={row.url || "/placeholder.svg"}
                 alt="Cover"
                 className="object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 hover:opacity-100 border border-gray-800"
                 onError={(e) => {
-                  if (row.title_id) {
-                    return;
-                  }
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />
