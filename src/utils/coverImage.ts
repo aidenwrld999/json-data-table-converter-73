@@ -7,12 +7,13 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
   if (!titleId) return "/placeholder.svg";
   
   try {
-    const url = getCoverUrl(titleId);
-    const response = await fetch(url);
+    const baseUrl = `https://cdn.orbispatches.com/titles/${titleId}_`;
+    const response = await fetch(`https://www.itsjokerzz.site/a.php?titleid=${titleId}`);
     
     if (response.ok) {
-      const text = await response.text();
-      return text;
+      const hash = await response.text();
+      const formattedUrl = `${baseUrl}${hash}/icon0.webp`;
+      return formattedUrl;
     }
   } catch (error) {
     console.log('Failed to fetch image:', error);
