@@ -10,9 +10,12 @@ export const fetchCoverImage = async (titleId: string): Promise<string> => {
   
   try {
     const url = getCoverUrl(titleId);
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      responseType: 'text'  // Explicitly request text response
+    });
     
     if (response.status === 200 && response.data) {
+      // The response.data is already the plain text URL
       return response.data;
     }
   } catch (error) {
