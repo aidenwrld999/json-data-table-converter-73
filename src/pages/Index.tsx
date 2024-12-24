@@ -4,6 +4,7 @@ import { DataTable } from "@/components/DataTable";
 import { useToast } from "@/components/ui/use-toast";
 import { Download, Upload } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { fetchCoverImage } from "@/utils/coverImage";
 
 const Index = () => {
   const [data, setData] = useState<any[]>([]);
@@ -23,26 +24,34 @@ const Index = () => {
     enabled: false, // Only fetch when needed
   });
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setOriginalFileName(file.name);
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
           const json = JSON.parse(e.target?.result as string);
-          const tableData = Object.entries(json.DATA).map(([pkg_url, details]: [string, any]) => ({
-            pkg_url,
-            title_id: details.title_id,
-            region: details.region,
-            name: details.name,
-            size: details.size,
-            version: details.version,
-            release: details.release,
-            min_fw: details.min_fw,
-            url: details.cover_url,
-            cover_url: details.cover_url
-          }));
+          const tableData = await Promise.all(
+            Object.entries(json.DATA).map(async ([pkg_url, details]: [string, any]) => {
+              let coverUrl = details.cover_url;
+              if (details.title_id) {
+                coverUrl = await fetchCoverImage(details.title_id);
+              }
+              return {
+                pkg_url,
+                title_id: details.title_id,
+                region: details.region,
+                name: details.name,
+                size: details.size,
+                version: details.version,
+                release: details.release,
+                min_fw: details.min_fw,
+                url: coverUrl,
+                cover_url: coverUrl
+              };
+            })
+          );
           setData(tableData);
           toast({
             title: "Success",
