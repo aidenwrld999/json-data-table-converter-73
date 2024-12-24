@@ -84,7 +84,7 @@ export function DataTable({ data, setData }: DataTableProps) {
           >
             <AspectRatio ratio={3/4}>
               <img
-                src={row.cover_url || getCoverUrl(row.title_id)}
+                src={row.title_id ? (row.cover_url || getCoverUrl(row.title_id)) : "/placeholder.svg"}
                 alt="Cover"
                 className="rounded-lg object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 hover:opacity-100 border border-gray-800"
                 onError={(e) => {
@@ -131,6 +131,11 @@ export function DataTable({ data, setData }: DataTableProps) {
                     onChange={(e) => handleCellChange(selectedIndex, col.key, e.target.value)}
                     className="bg-gray-800/50 border-gray-700"
                     readOnly={col.key === "url" || col.key === "cover_url"}
+                    placeholder={col.key === "url" || col.key === "cover_url" ? 
+                      (data[selectedIndex].title_id ? 
+                        (data[selectedIndex][col.key] || getCoverUrl(data[selectedIndex].title_id)) : 
+                        "Enter Title ID first"
+                      ) : ""}
                   />
                 </div>
               ))}
