@@ -84,10 +84,14 @@ export function DataTable({ data, setData }: DataTableProps) {
           >
             <AspectRatio ratio={3/4}>
               <img
-                src={row.title_id ? (row.cover_url || getCoverUrl(row.title_id)) : "/placeholder.svg"}
+                src={row.title_id ? getCoverUrl(row.title_id) : "/placeholder.svg"}
                 alt="Cover"
                 className="rounded-lg object-cover w-full h-full shadow-lg transition-all duration-500 opacity-70 hover:opacity-100 border border-gray-800"
                 onError={(e) => {
+                  if (row.title_id) {
+                    // Keep showing the URL even if image fails to load
+                    return;
+                  }
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
               />
@@ -105,18 +109,20 @@ export function DataTable({ data, setData }: DataTableProps) {
         Total Items: <span className="text-purple-400">{data.length}</span>
       </div>
       
-      <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+      <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6 relative">
         {data.map((row, rowIndex) => (
           <div key={rowIndex} className="relative">
             {renderCell(row, columns[0], rowIndex)}
           </div>
         ))}
-        <button
-          onClick={addNewRow}
-          className="w-40 h-[calc(40px*1.33)] flex items-center justify-center rounded-lg border border-gray-800 bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
-        >
-          Add New
-        </button>
+        <div className="col-span-1">
+          <button
+            onClick={addNewRow}
+            className="w-40 h-[calc(40px*1.33)] flex items-center justify-center rounded-lg border border-gray-800 bg-gray-900/50 text-gray-400 hover:text-white hover:bg-gray-800/50 transition-all duration-300"
+          >
+            Add New
+          </button>
+        </div>
       </div>
 
       {selectedIndex !== null && (
