@@ -1,6 +1,6 @@
 export const getCoverUrl = (titleId: string): string => {
   if (!titleId) return "/placeholder.svg";
-  return `https://cdn.orbispatches.com/titles/${titleId}/icon0.webp`;
+  return `https://www.itsjokerzz.site/a.php?titleid=${titleId}`;
 };
 
 export const fetchCoverImage = async (titleId: string): Promise<string> => {
